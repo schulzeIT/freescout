@@ -1,0 +1,54 @@
+worker_processes auto;
+pid /run/nginx.pid;
+error_log /dev/stderr warn;
+
+events { worker_connections 1024; }
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    access_log off;
+    sendfile on;
+    client_max_body_size 20M;
+
+    # Railway terminates TLS; tell PHP when the original request was https.
+    map $http_x_forwarded_proto $fs_https { default off; https on; }
+
+    server {
+        listen ${PORT};
+        server_name _;
+        root /var/www/html/public;
+        index index.php;
+        charset utf-8;
+
+        location / {
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        # Never serve dotfiles (.env, .git, ...).
+        location ~ /\. { deny all; }
+
+        # Uploaded files: images inline, everything else as download (as in the official guide).
+        location ~* ^/storage/attachment/ {
+            expires 1M;
+            access_log off;
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+        location ~* ^/(?:css|js|modules|storage)/.*\.(?:css|js|jpg|jpeg|gif|png|ico|svg|woff2?)$ {
+            expires 1M;
+            access_log off;
+            add_header Cache-Control "public";
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ \.php$ {
+            fastcgi_split_path_info ^(.+\.php)(/.+)$;
+            fastcgi_pass 127.0.0.1:9000;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            fastcgi_param HTTPS $fs_https;
+            fastcgi_read_timeout 120;
+        }
+    }
+}

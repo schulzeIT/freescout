@@ -26,5 +26,4 @@ RUN mv storage /opt/storage.dist \
 
 ENV PORT=8080
 EXPOSE 8080
-VOLUME ["/data"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

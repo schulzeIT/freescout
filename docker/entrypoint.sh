@@ -49,7 +49,7 @@ as_www() { su -s /bin/sh www-data -c "cd $APP && $*"; }
 # ---- database, caches, module links --------------------------------------------------------
 as_www "php artisan migrate --force"
 as_www "php artisan freescout:clear-cache"
-as_www "[ -e public/storage ] || php artisan storage:link || true"
+[ -e "$APP/public/storage" ] || ln -sfn "$DATA/storage/app/public" "$APP/public/storage"
 touch "$APP/storage/.installed" && chown www-data:www-data "$APP/storage/.installed"
 
 # Recreate public asset links of installed modules (Modules/<Name>/Public -> public/modules/<alias>).

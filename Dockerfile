@@ -3,7 +3,7 @@
 FROM php:8.3-fpm-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      nginx supervisor gettext-base ca-certificates git unzip curl \
+      nginx supervisor gettext-base ca-certificates git unzip curl procps  \
       libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libicu-dev \
       libc-client-dev libkrb5-dev libssl-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
